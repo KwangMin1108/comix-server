@@ -1,0 +1,1052 @@
+<html>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+<meta http-equiv="expires" content="0">
+<meta name="viewport" content="user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, width=device-width, height=device-height">
+<meta charset="UTF-8">
+<head>
+<title>Comix Viewer</title>
+<style>
+  .LoadingInfo {
+    display:block; position:absolute;
+    left: 20px;
+    top:80px;
+    background: white;
+    z-index: 20;
+    border:4px dotted gray;
+  }
+  .Location {
+    display:block; position:absolute; left: 10px; top:10px;
+  }
+  .MainWindow { display:block; position:absolute; left:215px; top:50px;}
+  .MainWindow img { border:1px solid gray;}
+  .BackgroundWindow { display:none; }
+  .Buttons { display:block; position:absolute; left:10px; top:30px;}
+  .ListBar {
+    top:50px;
+    border:1px solid gray;
+    width:200px;
+    height:100%;
+    position:absolute;
+    overflow-y:auto;
+    overflow-x:hidden;
+  }
+  .ListBar .image {
+    background-image: url('image_unbroken.png');
+    background-repeat: no-repeat;
+    background-position: 5px 5px;
+  }
+
+  .even {
+    background-color: #edf3fe;
+  }
+  .odd {
+    background-color: #fff;
+  }
+
+  .ListBar .prev {
+    background-color: #88C9FF;
+    /*color: #999;*/
+  }
+
+  .ListBar .next {
+    background-color: #68A9FD;
+  }
+
+  .ListBar .loaded {
+    /*background-color: #68A9FD;*/
+    color: #fff;
+  }
+
+  .ListBar .current {
+    background-color: #3879D7;
+    background-repeat: no-repeat;
+    background-position: 5px 5px;
+    color: #fff;
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACAUlEQVQ4T6WTT6gSURTGP6cSTAjXiiK4aFPgLAKDSBJCBHkLGSNtE4o0EmSbwZhF0mKoNMLBBJFZ6MJCRCECySglRHDhrBRx0Qu0wq0EjUagMY83MjovIrq7e/78zjn3fkeH/zy6P+SfB0ABuADgFIDPAN4A6O3H7wMMBEE89/v9dyKRiI4kSej1ekwmE1SrVZTL5Q/L5fI2gK8KSA3QGwyGt4IgXAuFQtDptM2JoohAIPBlNptdBvBNhqijHhWLxYexWOwI3u/34XK5NBMOBgO43e73kiRdVwPOkSQ5F0XxrFK51+uh2WyC4zgNJB6Po1AoXJHfROnggOO41yzL7gQPh0PItmw2C4fDsfV1Oh14PJ7HAFgFcK9Wq/EUJT+89vA8j0QisXXM53OYzeYagBsK4G6lUnkRDoc12d1uF+12G6lUauubTqew2+0vAdxSAFcZhvmYTqd3APl8HpIkgWGYHXu9XgdFUQ8APFUAZ2w22+F4PLYajcajYEEQYLVa4fV6d5I3mw18Pt+61WrJYvuk/sabNE2/kqsSBIHFYgGTyaQZqVQqIRqN8uv1+v6+DuQ7R9M0m8lkIHeiFpNcOZfLIZlMvlutVgcAfp4EkG1Bi8WSDgaDdqfTuZVyo9H4PhqNngB4BuDXSVJWt3sawCUAF4+X6fB4kX78bZn+ebl/A4hKqxHTmCKdAAAAAElFTkSuQmCC)
+  }
+
+  .ListBar .broken {
+    background-image: url('image_broken.png');
+    background-repeat: no-repeat;
+    background-position: 5px 5px;
+  }
+
+  .ListBar .loading {
+    background-image: url(data:image/gif;base64,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);
+    background-repeat: no-repeat;
+    background-position: 5px 5px;
+  }
+
+  .ListBar ul {
+    padding:0;
+    margin:0;
+  }
+
+  .ListBar li {
+    border-bottom:1px solid #ccc;
+    padding: 4px 30px 5px 25px;
+    margin:0;
+    color: #666;
+    list-style-type: none;
+  }
+
+</style>
+</head>
+<script src="./js/react-with-addons.js"></script>
+<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+<script language="javascript">
+
+  var imgDOMList = [];
+  var currentAddress = [];
+  var currentFileList = [];
+  var currentIndex = [];
+
+  String.prototype.isEmpty = function() {
+    return (this.length === 0 || !this.trim());
+  };
+
+  function startLoading() {
+    if (imgDOMList.length < 3 ) {
+      $("#LOADING").innerText = "LOADING...";
+    }
+    else {
+      $("#LOADING").innerText = "BACK LOADING...";
+    }
+    $("#LOADING").show();
+  }
+  function stopLoading() {
+    $("#LOADING").hide();
+  }
+
+  function fitAllImageSize() {
+    var i = 0;
+    for ( i = 0 ; i < imageCache.length ; i++ ) {
+      fitImageSize(imageCache[i].dom);
+    }
+    for ( i = 0 ; i < prevImageCache.length ; i++ ) {
+      fitImageSize(prevImageCache[i].dom);
+    }
+  }
+
+  function fitImageSize(imageDOM) {
+    var imgHeight = imageDOM.naturalHeight;
+    var imgWidth = imageDOM.naturalWidth;
+
+    var windowWidth = $(window).width() - 220; // = $("#LIST").offset().left;
+    var windowHeight = $(window).height() - 75; // = ( $("#MAIN").offset().top + 25 );
+
+    var imageRatio = imgHeight/imgWidth;
+    var windowRatio = windowHeight / windowWidth;
+
+    if ( imageRatio > windowRatio ) { // image is long, set Height to fit.
+      imageDOM.height = windowHeight;
+      imageDOM.width = windowHeight / imageRatio;
+    }
+    else {
+      imageDOM.width = windowWidth;
+      imageDOM.height = windowWidth * imageRatio;
+    }
+  }
+/*
+  // not working with unloaded image. >> version 3
+  function fitImageSize2(imageDOM) {
+    var imgHeight = imageDOM.naturalHeight;
+    var imgWidth = imageDOM.naturalWidth;
+
+    var windowWidth = $(window).width() - 220; // = $("#LIST").offset().left;
+    var windowHeight = $(window).height() - 75; // = ( $("#MAIN").offset().top + 25 );
+
+    var imageRatio = imgHeight/imgWidth;
+    var windowRatio = windowHeight / windowWidth;
+
+    $("#MAIN img").css('height', '');
+    $("#MAIN img").css('width', '');
+    if ( imageRatio > windowRatio ) { // image is long, set Height to fit.
+      $("#MAIN img").css('height', windowHeight + 'px');
+    }
+    else {
+      imageDOM.width = windowWidth;
+      $("#MAIN img").css('width', windowWidth + 'px');
+    }
+  }
+
+  // style control: make every image an ID, and set css with that IDs.
+  // TODO, or not to do..
+  function fitImageSize3(imageDOM) {
+    var imgHeight = imageDOM.naturalHeight;
+    var imgWidth = imageDOM.naturalWidth;
+
+    var windowWidth = $(window).width() - 220; // = $("#LIST").offset().left;
+    var windowHeight = $(window).height() - 75; // = ( $("#MAIN").offset().top + 25 );
+
+    var imageRatio = imgHeight/imgWidth;
+    var windowRatio = windowHeight / windowWidth;
+
+    var imgStyle = document.getElementById("IMAGESTYLE");
+    if ( imgStyle === null ) {
+      var imgStyle = document.createElement("style");
+      imgStyle.type = "text/css";
+      imgStyle.className = "imgStyle";
+      document.getElementsByTagName("head")[0].appendChild(imgStyle);
+    }
+
+    var text = document.createTextNode("#targetID {}");
+  }
+*/
+  // keyCode
+  // UP 38 DOWN 40 LEFT 37 RIGHT 39
+  function keyHandler(e) {
+    console.log(e.keyCode);
+
+    if ( $("#LIST .current").length === 0 ) { // cursor is not showed yet.
+      // 키를 입력하면 그제서야 커서가 나타난다.
+      setClass(currentIndex[currentIndex.length -1], _CURRENT);
+      return;
+    }
+
+    switch(e.keyCode) {
+      case 38: // UP
+      case 37: // LEFT
+        // move cursor to up, show prev image
+        goPrevItem();
+        return false;
+      case 40: // DOWN
+      case 39: // RIGHT
+        // move cursor to down, show next image
+        goNextItem();
+        return false;
+      case 13: // ENTER/RETURN
+      case 32: // SPACE
+        // go into the folder : act like click
+        runItem();
+        return false;
+      default:
+        break;
+    }
+  }
+
+  function goNextItem() {
+    if ( currentIndex[currentIndex.length -1] === currentFileList.length - 1 ) {
+      console.log("last item");
+      return;
+    }
+
+    {  // ( currentIndex[currentIndex.length -1] < currentFileList.length - 1 ) // movable
+      setClass(currentIndex[currentIndex.length -1], _NONE);
+      currentIndex[currentIndex.length -1] ++;
+      setClass(currentIndex[currentIndex.length -1], _CURRENT);
+    }
+    goNextPage();
+  }
+
+  function goPrevItem() {
+    if ( ( currentIndex[currentIndex.length -1] === 0 && currentIndex.length === 1 ) ||
+      ( currentIndex[currentIndex.length -1] === -1 && currentIndex.length > 1 ) ) {
+      console.log ("first item");
+      return;
+    }
+
+    { // if ( currentIndex[currentIndex.length -1] >= 1 ) {  // movable
+      setClass(currentIndex[currentIndex.length -1], _NONE);
+      currentIndex[currentIndex.length -1] --;
+      setClass(currentIndex[currentIndex.length -1], _CURRENT);
+    }
+
+    goPrevPage();
+  }
+
+  function runItem() {
+    var targetIndex = currentIndex[currentIndex.length -1];
+    console.log("Item Number:" + targetIndex);
+
+    if ( targetIndex === -1 ) {
+      moveToParent();
+    }
+    else {
+      console.log("moveTo:"+ targetIndex);
+      moveToTargetIndex(targetIndex);
+    }
+  }
+
+var _BACK = -1;
+var _INIT = -999;
+
+  function initialize() {
+    $("#LOADING").hide();
+
+    $(document).ajaxStart(startLoading);
+    $(document).ajaxStop(stopLoading);
+
+    $(document).ready(function() {
+      $(window).bind('resize', fitAllImageSize);
+      fitAllImageSize();
+    });
+
+    var targetURL = getCurrentURL();
+    moveToTarget(targetURL, _INIT);
+
+    document.onkeydown = keyHandler;
+  }
+
+  function getCurrentURL() {
+    var location = "/";
+    for ( var i = 0 ; i < currentAddress.length ; i++ ) {
+      location += encodeURIComponent(currentAddress[i]) + "/";
+    }
+    return location;
+  }
+
+  function simpleEncodeURIComponent(text) {
+    return text.replace("+", "%2B");
+  }
+
+  function getParentURL() {
+    var location = "/";
+    for ( var i = 0 ; i < currentAddress.length - 1 ; i++ ) {
+      location += encodeURIComponent(currentAddress[i]) + "/";
+    }
+    return location;
+  }
+
+  function getTargetURL(index) {
+    if ( index === _BACK ) {
+      return getParentURL();
+    }
+    var result = getCurrentURL();
+
+    if ( currentFileList.length > index ) {
+      result += encodeURIComponent(currentFileList[index]);
+    }
+    console.log("getTargetURL:"+result);
+    return result;
+  }
+
+
+  function saveList(data) {
+    currentFileList = currentFileList.splice(); // Empty.
+    $.merge(currentFileList, data.split("\n") );  // Save.
+
+    // remove unnecessary spaces
+    for ( var i = 0 ; i < currentFileList.length ; i++ ) {
+      if ( currentFileList[i].isEmpty() ) {
+        currentFileList.splice(i, 1);
+      }
+    }
+    currentFileList.sort();
+
+    // currentIndex.push(0);  // >> moveToTarget 으로 이동함. 여기선 go Parent 와 go Target 구분이 안되니까
+  }
+
+  function showFileList() {
+    var ul = document.createElement("ul");
+    // create <li> element
+
+    var li;
+    var text;
+    if ( currentAddress.length > 0 ) {
+      addListItem(ul, "돌아가기", _BACK);
+    }
+    for ( var i = 0 ; i < currentFileList.length ; i++ ) {
+      addListItem(ul, currentFileList[i], i);
+    }
+
+    // 현재 표시중인 이미지 삭제
+    $("#MAIN").empty();
+
+    // 리스트 삭제
+    $("#LIST").empty();
+    $("#LIST").append(ul);
+
+    // 리스트 위치 당기기
+    if ( currentIndex[ currentIndex.length - 1 ] === 0 ) {
+      setScrolltoIndex(_BACK);
+    }
+    else {
+      setScrolltoIndex(currentIndex[ currentIndex.length - 1 ]);
+    }
+
+    return ;
+  }
+
+  function addListItem(targetList, name, targetIndex) {
+    var li = document.createElement("li");
+    var text = document.createTextNode(name);
+    li.appendChild(text);
+    li.index = targetIndex;
+    { // if (targetIndex >= 0 ) {
+      li.id = "li_"+targetIndex;
+      li.dataset.index = targetIndex;
+    }
+    $(li).bind('click', clickEvent);
+    li.className = ((targetIndex<0 ? targetIndex*(-1):targetIndex) %2 ? 'even':'odd' );
+    targetList.appendChild(li);
+  }
+
+  // index가 -1 이면 parent 로 가기.
+  // image 인지 체크하여 움직이기
+  function clickEvent(e) {
+    var targetIndex = e.target.index;
+    console.log("click:"+ targetIndex);
+    if ( targetIndex === _BACK ) {
+      moveToParent();
+    }
+    else {
+      console.log("moveTo:"+ targetIndex);
+      moveToTargetIndex(targetIndex);
+    }
+  }
+
+  // 상대는 늘 주소
+  function moveToParent() {
+    // 1. 저장된 주소 목록에서 맨 끝 주소를 제거한다. 나중에 테스트 합시다.
+    var targetURL = getTargetURL(_BACK);
+    moveToTarget(targetURL, _BACK);
+    return;
+  }
+
+  // 클릭 결과 상대가 주소일 수도 있고, 이미지일 수도 있다.
+  function moveToTargetIndex(index) {
+    currentIndex[currentIndex.length -1] = index;
+    var targetURL = getTargetURL(index);
+    $.ajax({
+      type:"HEAD",
+      // url:"/COMICS/01.zip/01/mg01-005.jpg",
+      url:targetURL,
+      async:true
+    }).done(function(message, text, jqXHR){
+      if(jqXHR.getResponseHeader('Content-Type').indexOf("image")!=-1) {
+        showImage(targetURL, index);
+      }
+      else {
+        moveToTarget(targetURL, index);
+      }
+    }).error(function(jqXHR, textStatus, errorThrown) {
+      console.log(textStatus);
+    });
+  }
+
+  // 상대가 주소일 경우 처리
+  // index : _BACK : Parent Page
+  // index : _INIT : initialize
+  function moveToTarget(targetURL, index) {
+    clearImageCache();
+
+    setClass(index, _LOADING);
+
+    var targetFolder = currentFileList[index];
+    var targetIndex = _INIT;
+    $.get(targetURL, function(data){
+      if ( index === _BACK ) {
+        currentAddress.pop();
+        currentIndex.pop();
+        targetIndex = currentIndex[currentIndex.length -1];
+      }
+      else { // if ( index === _INIT ) {
+        // including _INIT
+        if ( index !== _INIT ) {
+          currentAddress.push(targetFolder);
+        }
+        currentIndex.push(0);
+      }
+      // currentIndex[currentIndex.length - 2] = index; >> moveToTargeIndex 로 옮겨졌다.
+      // 왜냐면 어차피 이미지를 보더라도 인덱스 값을 넣어야 하니까
+      saveList(data);
+      showFileList();
+      if ( targetIndex !== _BACK ) {
+        setClass(targetIndex, _CURRENT);
+      }
+    })
+    .done(function(){
+      updateLocation();
+      console.log("1. Succeed");
+    })
+    .fail(function(){console.log("1. Failure");})
+    .always(function(){console.log("1. Finished");});
+  }
+
+  function updateLocation(address) {
+    var targetURL = getCurrentURL();
+    if ( address !== null && address !== undefined ) {
+      targetURL = address;
+    }
+    $("#LOCATION").text( "[LOCATION] :: " + decodeURIComponent(targetURL) );
+  }
+
+  // 상대가 이미지일 경우 처리, 이미지 관련 처리 프로세스 추가.
+  function showImage(address, index) {
+    moveToImage(index);
+    openImage(index);
+  }
+
+  function moveToImage(targetIndex) {
+    clearUnnecessaryCache(targetIndex);
+    var i = 0;
+    for ( i = 0 ; i < _currImageCacheLength ; i++ ) {
+      loadImagesFromFileList(targetIndex + i, _NEXT);
+    }
+    for ( i = 0 ; i < _prevImageCacheLength ; i++ ) {
+      loadImagesFromFileList(targetIndex - i - 1, _PREV);
+    }
+    updateLocation();
+  }
+
+  function openImage(index) {
+    setTimeout(function(){ showTargetImage(index); }, 200);
+  }
+
+  function clearUnnecessaryCache(index) {
+    var tmpCache = [];
+    var i = 0;
+    while( prevImageCache.length > 0 ) {
+      tmpCache.push( prevImageCache.pop() );
+    }
+    while( imageCache.length > 0 ) {
+      tmpCache.push( imageCache.shift() );
+    }
+    // every loaded images are in the imageCache.
+    // prevImageCache: empty
+    // imageCache: empty
+    while ( tmpCache.length > 0 ) {
+      var imageDOM = tmpCache.shift();
+      if ( imageDOM.index < index - _prevImageCacheLength ||
+            imageDOM.index >= index + _currImageCacheLength ) {
+        // 버린다
+        setClass(imageDOM.index, _NONE);
+        continue;
+      }
+      else if ( imageDOM.index >= index - _prevImageCacheLength &&
+                imageDOM.index < index ) {
+        setClass(imageDOM.index, _PREV);
+        prevImageCache.push( imageDOM );
+      }
+      else if ( imageDOM.index == index ) {
+        setClass(imageDOM.index, _CURRENT);
+        imageCache.push( imageDOM );
+      }
+      else if ( imageDOM.index > index &&
+                imageDOM.index < index + _currImageCacheLength ) {
+        setClass(imageDOM.index, _NEXT);
+        imageCache.push( imageDOM );
+      }
+    }
+  }
+
+  function clearImageCache() {
+    var i = 0;
+    for ( i = 0 ; i < imageQueue.length ; i++ ) {
+      setClass(imageQueue[i].index, _NONE);
+    }
+    imageQueue.length = 0;
+
+    for ( i = 0 ; i < imageCache.length ; i++ ) {
+      setClass(imageCache[i].index, _NONE);
+    }
+    imageCache.length=0;
+
+    for ( i = 0 ; i < prevImageCache.length ; i++ ) {
+      setClass(prevImageCache[i].index, _NONE);
+    }
+    prevImageCache.length=0;
+  }
+
+  // Checked ^^
+
+
+// to handle Images
+// VERSION 2.0
+//
+  var _NONE = 0;
+  var _PREV = 1;
+  var _NEXT = 2;
+  var _CURRENT = 3;
+  var _LOADING = 4;
+  var _LOADED = 5;
+  var _ERROR = -4;
+
+  var _prevImageCacheLength = 3;
+  var _currImageCacheLength = 10;
+
+  var imageCache = [];
+  var prevImageCache = [];
+
+  function showTargetImage(index) {
+    if ( imageCache.length === 0 ) {
+      setTimeout( function(){ showTargetImage(index); }, 500);
+      return;
+    }
+
+    console.log("CurrentCache:"+imageCache[0].index + " and Target Index: "+index);
+    if ( imageCache[0].index === index ) {
+      showCurrentImage();
+    }
+    else {
+      // if ( imageCache[0].index !== index && imageQueue.length !== 0 ) {
+      setTimeout( function(){ showTargetImage(index); }, 200);
+    }
+  }
+
+  function showCurrentImage() {
+    $("#MAIN").empty();
+    $("#LIST .current").removeClass("current");
+
+    if ( imageCache.length > 0 ) {
+      console.log("SHOW:"+imageCache[0].dom.src);
+      $("#MAIN").append(currentFileList[imageCache[0].index] + "<br/>");
+      $("#MAIN").append(imageCache[0].dom);
+
+      // $("#li_"+imageCache)
+      setClass(imageCache[0].index, _CURRENT);
+      setScrolltoIndex(imageCache[0].index);
+      // $("#LIST").scrollTop( $("#LIST").scrollTop() + $("#LIST li.current").offset().top - 125);
+      // console.log($("#LIST").scrollTop() + $("#LIST li.current").offset().top - 125);
+    }
+    else if ( imageQueue.length > 0 ) {
+      console.log("retry");
+      setTimeout(showCurrentImage, 100);
+    }
+    else {
+      console.log("no image");
+    }
+  }
+
+  function goNextPage() {
+    /*
+      1. imageCache.shift >> prevImageCache.push
+      2. Show Image; imageCache[0]
+      3. make prevImageCache.length < 3 :: prevImageCache.shift
+      4. load new image : imageCache.push ( new imageDOM )  :: loadImagesFromFileList(index);
+     */
+    //0. check imageCache
+    if ( imageCache.length === 0 ) {
+      console.log ("NO IMAGE");
+      return;
+    }
+    // if ( imageCache.length === 1 )  {
+    //   console.log("Last Image");
+    //   return;
+    // }
+
+    //1
+    var targetImageDOM = imageCache.shift();
+    prevImageCache.push(targetImageDOM);
+    setClass(targetImageDOM.index, _PREV);
+
+    //2
+    showCurrentImage();
+
+    // 3
+    if ( prevImageCache.length > _prevImageCacheLength ) {
+      var removedImageDOM = prevImageCache.shift();
+      setClass(removedImageDOM.index, _NONE);
+    }
+
+    // make it full length
+    // TODO: 이미지 큐에 데이터가 있다면 이미지 큐에 있는 마지막 이미지를 기준으로.
+    var lastIndex = imageCache[imageCache.length - 1].index;
+    if ( imageQueue.length > 0 ) {
+      lastIndex = imageQueue[imageQueue.length -1].index;
+    }
+    for ( var i = 0 ; i < _currImageCacheLength - imageCache.length ; i ++ ) {
+      loadImagesFromFileList( lastIndex + i + 1 , _NEXT);
+    }
+  }
+
+  function goPrevPage() {
+    /*
+      1. imageCache.unshift << prevImageCache.pop
+      2. Show Image; imageCache[0]
+      3. make prevImageCache.length >= 3 :: prevImageCache < loadImagesFromFileList(index);
+      4. make imageCache.length <= 10 :: prevImageCache.shift
+     */
+    //0. check imageCache
+
+    if ( imageCache.length === 0 ) {
+      console.log("NO IMAGE");
+      return;
+    }
+
+    if (prevImageCache.length === 0 ) {
+      console.log("First Image");
+      // return;
+    }
+    if ( currentIndex[currentIndex.length -1 ] === -1 ||  // first item (back)
+          ( currentIndex.length === 1 && currentIndex[0] === 0 ) ) {  // root
+      console.log("First List");
+    }
+
+
+    //1
+    setClass(imageCache[0].index, _NEXT);
+    var targetImageDOM = prevImageCache.pop();
+    imageCache.unshift( targetImageDOM );
+
+    //2
+    showCurrentImage();
+
+    //3
+    if ( prevImageCache.length !== 0 ) {
+      for ( var i = 0 ; i < _prevImageCacheLength - prevImageCache.length ; i++ ) {
+        loadImagesFromFileList( prevImageCache[0].index - 1 - i , _PREV );
+      }
+    }
+
+    //4
+    if ( imageCache.length > _currImageCacheLength ) {
+      var removedImageDOM = imageCache.pop();
+      setClass(removedImageDOM.index, _NONE);
+    }
+
+  }
+
+  function setScrolltoIndex(index) {
+    if ( index === -1 || $("#LIST #li_"+index ).length === 0 ) {
+      $("#LIST").scrollTop(0);
+    }
+    else if ( $("#LIST li.current").length > 0 ) {
+      $("#LIST").scrollTop( $("#LIST").scrollTop() + $("#LIST li.current").offset().top - 125);
+    }
+    else {
+      console.log("WHIAT?"+index);
+    }
+  }
+
+  var task_DoLoadImage = null;
+  var imageQueue = [];
+
+  function loadImagesFromFileList3(index, targetArray) {
+    /*
+    기존 방식
+    1) 캐시할 파일들을 이미지 큐에 넣습니다.
+    2) 이미지 큐에 들어있는 파일들을 이미지 로드해서 이미지 캐시에 넣습니다.
+
+    바뀔 방식
+    1) 캐시할 파일 목록에 클래스 셋팅을 합니다.
+    2) 클래스 셋팅된 파일들에 대해 이미지 로드해서 이미지 캐시에 넣습니다.
+    */
+    setClass2(index, targetArray);
+    // setClass2(index, _LOADING);
+
+    setTimeout(doLoadImage3, 100);
+  }
+
+  function doLoadImage3() {
+    $(".loading").each(function(i, obj) {
+
+    });
+// $("#table_filelist tbody tr.flistmouseoff").each(function(i, obj){ $.get("https://torrentz.eu/"+obj.title.replace("torrent2ddl_","").replace(".zip",""), function(data){ console.log(obj.title.replace("torrent2ddl_","").replace(".zip",":"));console.log($(data)[1]);} ); });
+
+  }
+
+
+  function loadImagesFromFileList(index, targetArray) {
+    if ( index === _BACK || index === _INIT ) return;
+    if ( index === null || index === undefined || isNaN(index) ) return ;
+    if ( index > currentFileList.length || index < 0 ) return;
+    if ( isLoadingImage(index) || isLoadedImage(index) ) return;
+
+
+    imageQueue.push({targetIndex:index, retry:0, targetCache:targetArray});
+    setClass(index, _LOADING);
+    if ( task_DoLoadImage === null ) {
+      task_DoLoadImage = setTimeout(doLoadImage2, 100);
+    }
+  }
+
+  function isLoadedImage(index) {
+    for ( var i = 0 ; i < imageCache.length ; i++ ) {
+      if ( imageCache[i].index === index ) return true;
+    }
+    return false;
+  }
+
+  function isLoadingImage(index) {
+    for ( var i = 0 ; i < imageQueue.length ; i++ ) {
+      if ( imageQueue[i].index === index ) return true;
+    }
+    return false;
+  }
+
+  function doLoadImage2() {
+    if ( imageQueue.length === 0 ) {
+      task_DoLoadImage = null;
+      return;
+    }
+
+    // loading phase
+    var target = imageQueue.shift();
+
+    if ( target.targetIndex > currentFileList.length || target.targetIndex < 0 ) {
+      console.log("Out Of Bound- index: " + target.targetIndex + ", " + currentFileList.length );
+    }
+    else {
+      var targetImage = document.createElement("img");
+      targetImage.onload = function() {
+        if ( 'naturalHeight' in this ) {
+          if ( this.naturalHeight + this.naturalWidth === 0 ) {
+            this.onerror();
+            return;
+          }
+        } else if ( this.width + this.height === 0 ) {
+          this.onerror();
+          return;
+        }
+
+        if ( target.targetCache === _NEXT ) {
+          insertImageIntoCache({index:target.targetIndex, dom:targetImage}, imageCache);
+          setClass(target.targetIndex, _NEXT);
+        }
+        else if ( target.targetCache === _PREV ) {
+          insertImageIntoCache({index:target.targetIndex, dom:targetImage}, prevImageCache);
+          setClass(target.targetIndex, _PREV);
+        }
+        else {
+          console.log("Target cache is not specified.");
+        }
+        fitImageSize(this);
+        setClass(target.targetIndex, _LOADED);
+
+        if ( imageQueue.length > 0 && task_DoLoadImage === null ) {
+          task_DoLoadImage = setTimeout(doLoadImage2, 100);
+        }
+      };
+      targetImage.onerror = function() {
+        if ( target.retry <= 3 ) {
+          imageQueue.unshift({targetIndex:target.targetIndex, retry:target.retry+1});
+        }
+        else if ( target.retry <= 6 ) {
+          imageQueue.push({targetIndex:target.targetIndex, retry:target.retry+1});
+        }
+        else {
+          console.log("Load ERROR - Image is not possible to load: "+targetImage.src);
+          setClass(target.targetIndex, _ERROR);
+        }
+
+        if ( imageQueue.length > 0 && task_DoLoadImage === null ) {
+          task_DoLoadImage = setTimeout(doLoadImage2, 100);
+        }
+      };
+      targetImage.onprogress= function(event) {
+        // alert(event);
+      };
+
+      var imgAddr = getCurrentURL() + currentFileList[target.targetIndex];
+      targetImage.src = imgAddr ;  // 이 단계에서 파일 다운로드가 일어난다.
+    }
+
+
+    // check imageQueue and run again.
+    // or remove Lock
+    task_DoLoadImage = null;
+  }
+
+/*
+  function doLoadImage() {
+    if ( isLoading_Lock ) {
+      if ( imageQueue.length > 0 )
+        setTimeout(doLoadImage, 100);
+      else {
+        return;
+      }
+    }
+
+    var target;
+    if ( imageQueue.length === 0 ) {
+      isLoading_Lock = false;
+      setTimeout(showCurrentImage, 100);
+      return;
+    }
+    else {
+      isLoading_Lock = true;
+      target = imageQueue.shift();
+    }
+
+    if ( target.targetIndex >= currentFileList.length || target.targetIndex < 0 ) {
+      console.log("Out Of Bound- index: " + target.targetIndex + ", " + currentFileList.length );
+      return;
+    }
+
+    var targetImage = document.createElement("img");
+
+    targetImage.onload = function() {
+      if ( 'naturalHeight' in this ) {
+        if ( this.naturalHeight + this.naturalWidth === 0 ) {
+          this.onerror();
+          return;
+        }
+      } else if ( this.width + this.height === 0 ) {
+        this.onerror();
+        return;
+      }
+
+      if ( target.targetCache === _NEXT ) {
+        insertImageIntoCache({index:target.targetIndex, dom:targetImage}, imageCache);
+        setClass(target.targetIndex, _NEXT);
+        // if ( target.retry >= 4 ) {
+        //   insertImageIntoCache({index:target.targetIndex, dom:targetImage, retry:target.retry}, imageCache);
+        // }
+        // else {
+        //   imageCache.push({index:target.targetIndex, dom:targetImage, retry:target.retry});
+        // }
+      }
+      else if ( target.targetCache === _PREV ) {
+        insertImageIntoCache({index:target.targetIndex, dom:targetImage}, prevImageCache);
+        setClass(target.targetIndex, _PREV);
+        // if ( target.retry >= 4 ) {
+        //   insertImageIntoCache({index:target.targetIndex, dom:targetImage, retry:target.retry}, prevImageCache);
+        // }
+        // else {
+        //   prevImageCache.unshift({index:target.targetIndex, dom:targetImage, retry:target.retry});
+        // }
+      }
+      else {
+        console.log("Target cache is not specified.");
+      }
+
+      if ( imageQueue.length > 0 ) {
+        setTimeout(doLoadImage, 100);
+      }
+      else {
+        isLoading_Lock = false;
+      }
+      fitImageSize(this);
+    };
+    targetImage.onerror = function() {
+      if ( target.retry <= 3 ) {
+        imageQueue.unshift({targetIndex:target.targetIndex, retry:target.retry+1});
+      }
+      else if ( target.retry <= 6 ) {
+        imageQueue.push({targetIndex:target.targetIndex, retry:target.retry+1});
+      }
+      else {
+        console.log("Load ERROR - Image is not possible to load: "+target.targetIndex);
+      }
+      if ( imageQueue.length > 0 ) {
+        setTimeout(doLoadImage, 100);
+      }
+      else {
+        isLoading_Lock = false;
+      }
+    };
+    targetImage.onprogress= function(event) {
+      // alert(event);
+    };
+
+    // TODO
+
+    var imgAddr = getCurrentURL() + currentFileList[target.targetIndex];
+    targetImage.src = imgAddr ;  // 이 단계에서 파일 다운로드가 일어난다.
+  }
+*/
+
+// over retried image sorting.
+  function insertImageIntoCache(target, targetCache) {
+    // console.log ( "insertImage :" + target.index + "/" + target.dom.src );
+    // It's working, but not efficient.
+    // for ( var i = 0 ; i < targetCache.length ; i++ ) {
+    //   if ( targetCache[i].index > target.index ) {
+    //     targetCache.splice(i, 0, target);
+    //     return;
+    //   }
+    // }
+    // Upgrade. :: almost loop 1, worst case: length of targetCache.
+    for ( var i = targetCache.length ; i > 0 ; i-- ){
+      if ( targetCache[i - 1].index < target.index ) {
+        targetCache.splice(i, 0, target);
+        return;
+      }
+    }
+    targetCache.unshift(target);
+    return;
+  }
+
+// prev, current, loaded
+  function setClass(index, targetClass) {
+    if ( targetClass === _LOADED ) {
+      $("#li_"+index).removeClass('loading');
+      return;
+    }
+    else if ( targetClass === _LOADING ) {
+      $("#li_"+index).addClass('loading');
+      return;
+    }
+
+    $("#li_"+index).removeClass('prev');
+    $("#li_"+index).removeClass('loaded');
+    $("#li_"+index).removeClass('current');
+
+    var targetClassName = "";
+    switch(targetClass) {
+      case _PREV:
+        targetClassName="prev";
+        break;
+      case _CURRENT:
+        targetClassName="current";
+        break;
+      case _NEXT:
+        targetClassName="loaded";
+        break;
+      case _ERROR:
+        targetClassName="broken";
+        break;
+      case _NONE:
+        return;
+      default:
+        return;
+    }
+    $("#li_"+index).addClass(targetClassName);
+    return;
+  }
+
+  function setClass2(index, targetClass) {
+    $("#li_"+index).removeClass('prev');
+    $("#li_"+index).removeClass('next');
+    $("#li_"+index).removeClass('current');
+
+    var targetClassName = "";
+    var loading = false;
+    switch(targetClass) {
+      case _PREV:
+        loading = true;
+        targetClassName="prev";
+        break;
+      case _CURRENT:
+        loading = true;
+        targetClassName="current";
+        break;
+      case _NEXT:
+        loading = true;
+        targetClassName="next";
+        break;
+      case _ERROR:
+        targetClassName="broken";
+        break;
+      case _NONE:
+        return;
+      default:
+        return;
+    }
+
+    $("#li_"+index).addClass(targetClassName);
+    if ( loading === true ) {
+      $("#li_"+index).addClass('loading');
+    }
+    return;
+  }
+
+</script>
+<body onLoad="javascript:initialize()">
+  <div class="Buttons">
+  <input type="button" onClick="javascript:getList();" value="TEST"/>
+  <input type="button" onClick="javascript:goPrevPage();" value="<"/>
+  <input type="button" onClick="javascript:goNextPage();" value=">"/>
+  </div>
+  <div id="LOCATION" class="Location"></div>
+  <div id="LIST" class="ListBar"></div>
+  <div id="MAIN" class="MainWindow">
+    <img />
+    <!-- <img src="http://aircomix.wain.kr:35147/COMICS/BLACKROSE.zip/0000.jpg"> -->
+  </div>
+  <div class="BackgroundWindow"></div>
+  <div id="LOADING" class="LoadingInfo">LOADING</div>
+</body>
+</html>
